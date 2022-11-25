@@ -6,6 +6,8 @@ class Game {
     this.ctx = null;
     this.bg = null;
     this.player = null;
+    this.frames = 0;
+    this.obstacles = [];
   }
 
   startGame() {
@@ -19,6 +21,7 @@ class Game {
     const theAvatar = new Player(30, 30, 50, 290);
     this.player = theAvatar;
     console.log(theAvatar); 
+
 
     //for the animation
     this.updateCanvas();
@@ -42,21 +45,36 @@ class Game {
     );
   }
 
+  drawObstacles(){
+    this.frames += 1;
+    if(this.frames % 120 ===0){
+    this.obstacles.push(new Blocks(60,60,640,260,'red'))
+    }
+    for(let i = 0; i < this.obstacles.length; i++){
+      this.obstacles[i].posX += -1;
+      this.obstacles[i].update();
+    }
+   
+    
+  }
+
   updateCanvas() {
     setInterval(() => {
       this.ctx.clearRect(0, 0, 700, 500);
       this.drawPlayer();
       this.drawLine();
+      this.drawObstacles();
     }, 20);
   }
 }
 
 class Player {
-  constructor(width, height, posX, posY) {
+  constructor(width, height, posX, posY,color) {
     this.width = width;
     this.height = height;
     this.posX = posX;
     this.posY = posY;
+    this.color = color;
 
     this.speedY = 0;
   }
@@ -73,10 +91,11 @@ class Player {
     switch (e.keyCode) {
         case 32:
           this.jump();
-          console.log("I jumped!");
           break;
       }
   }
+
+
   
 }
 
@@ -88,5 +107,27 @@ window.onload = () => {
   });
   document.addEventListener("keyup", (e) => {
     game.player.land();
-  })
+  });
 };
+
+
+
+class Blocks {
+  constructor(width, height, posX, posY,color) {
+    this.width = width;
+    this.height = height;
+    this.posX = posX;
+    this.posY = posY;
+    this.color = color;
+    this.speedX = 0;
+  }
+
+  update(){
+    ctx.fillRect(this.posX, this.posY, this.width,this.height);
+    ctx.fillStyle = this.color;
+  }
+}
+
+console.log(Game.ctx);
+
+
