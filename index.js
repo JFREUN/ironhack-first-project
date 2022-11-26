@@ -11,33 +11,54 @@ class Game {
   }
 
   startGame() {
-    console.log("starting");
+   
     const canvas = document.getElementById("example");
     this.ctx = canvas.getContext("2d");
-    
+
+     //background 
+     const background = new Image(); //not working
+     background.src = "./images/mountain-background.jpg";
+ 
+     background.onload = () => {
+       this.bg = background;
+       this.updateCanvas();
+       this.drawPlayer();
+     };
+ 
 
     //player
 
-    const theAvatar = new Player(30, 30, 50, 290);
+    const theAvatar = new Player(60, 90, 50, 350);
     this.player = theAvatar;
-    console.log(theAvatar); 
 
+    //to stop the game 
 
+    function checkGameOver() {
+      const crashed = this.obstacles.some(function (obstacle) {
+        console.log(this.player)
+        return this.player.crashWith(obstacle);
+      });
+  
+      if(crashed){
+        this.stop();
+      }
+    };
+    
     //for the animation
     this.updateCanvas();
-    
   }
 
   drawLine() {
     ctx.beginPath();
-    ctx.moveTo(0, 320);
-    ctx.lineTo(700, 320);
+    ctx.moveTo(0, 440);
+    ctx.lineTo(700, 440);
     ctx.stroke();
     ctx.closePath();
   }
 
   drawPlayer() {
-    this.ctx.fillRect(
+    this.ctx.drawImage(
+      this.player.img,
       this.player.posX,
       this.player.posY,
       this.player.width,
@@ -45,58 +66,101 @@ class Game {
     );
   }
 
-  drawObstacles(){
+  drawObstacles() {
     this.frames += 1;
-    if(this.frames % 120 ===0){
-    this.obstacles.push(new Blocks(60,60,640,260,'red'))
+    let minDistance = 40;
+    let maxDistance = 100;
+
+    let unroundedDistance = Math.floor(
+      Math.random() * (maxDistance - minDistance + 1) + minDistance
+    );
+    let distance = Math.round(unroundedDistance / 10) * 10;
+
+    if (this.frames % distance === 0) {
+      this.obstacles.push(new Blocks(30, 30, 640, 390, "red"));
     }
-    for(let i = 0; i < this.obstacles.length; i++){
-      this.obstacles[i].posX += -1;
+    for (let i = 0; i < this.obstacles.length; i++) {
+      this.obstacles[i].posX += -3;
       this.obstacles[i].update();
     }
-   
-    
   }
+
+  
 
   updateCanvas() {
     setInterval(() => {
       this.ctx.clearRect(0, 0, 700, 500);
+      this.ctx.drawImage(this.bg,0,0,700,500);
       this.drawPlayer();
       this.drawLine();
       this.drawObstacles();
+      //this.checkGameOver();
     }, 20);
+  }
+
+  stop() {
+    clearInterval(this.interval);
   }
 }
 
 class Player {
-  constructor(width, height, posX, posY,color) {
+  constructor(width, height, posX, posY, color) {
     this.width = width;
     this.height = height;
     this.posX = posX;
     this.posY = posY;
     this.color = color;
-
-    this.speedY = 0;
+    this.img = this.createAvatar();
   }
 
-  jump(){
-    this.posY = 210;
+  createAvatar(){
+    const avatar = new Image();
+    avatar.src = "./images/Aang.png";
+
+    return avatar;
   }
 
-  land(){
+
+  left() {
+    return this.posX;
+  }
+
+  right() {
+    return this.posX + this.width;
+  }
+
+  top() {
+    return this.posY;
+  }
+
+  bottowm() {
+    return this.posY + this.height;
+  }
+
+  jump() {
     this.posY = 290;
   }
 
-  move(e){
-    switch (e.keyCode) {
-        case 32:
-          this.jump();
-          break;
-      }
+  land() {
+    this.posY = 350;
   }
 
+  move(e) {
+    switch (e.keyCode) {
+      case 32:
+        this.jump();
+        break;
+    }
+  }
 
-  
+  crashWith(obstacle) {
+    return !(
+      this.bottom() < obstacle.top() ||
+      this.top() > obstacle.bottom() ||
+      this.right() < obstacle.left() ||
+      this.left() > obstacle.right()
+    );
+  }
 }
 
 window.onload = () => {
@@ -110,24 +174,32 @@ window.onload = () => {
   });
 };
 
-
-
 class Blocks {
-  constructor(width, height, posX, posY,color) {
+  constructor(width, height, posX, posY, color) {
     this.width = width;
     this.height = height;
     this.posX = posX;
     this.posY = posY;
     this.color = color;
-    this.speedX = 0;
   }
 
-  update(){
-    ctx.fillRect(this.posX, this.posY, this.width,this.height);
+  left() {
+    return this.posX;
+  }
+
+  right() {
+    return this.posX + this.width;
+  }
+
+  top() {
+    return this.posY;
+  }
+
+  bottom() {
+    return this.posY + this.height;
+  }
+  update() {
+    ctx.fillRect(this.posX, this.posY, this.width, this.height);
     ctx.fillStyle = this.color;
   }
 }
-
-console.log(Game.ctx);
-
-
