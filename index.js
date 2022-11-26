@@ -11,39 +11,24 @@ class Game {
   }
 
   startGame() {
-   
     const canvas = document.getElementById("example");
     this.ctx = canvas.getContext("2d");
 
-     //background 
-     const background = new Image(); //not working
-     background.src = "./images/mountain-background.jpg";
- 
-     background.onload = () => {
-       this.bg = background;
-       this.updateCanvas();
-       this.drawPlayer();
-     };
- 
+    //background
+    const background = new Image(); //not working
+    background.src = "./images/mountain-background.jpg";
+
+    background.onload = () => {
+      this.bg = background;
+      this.updateCanvas();
+      this.drawPlayer();
+    };
 
     //player
 
     const theAvatar = new Player(60, 90, 50, 350);
     this.player = theAvatar;
 
-    //to stop the game 
-
-    function checkGameOver() {
-      const crashed = this.obstacles.some(function (obstacle) {
-        console.log(this.player)
-        return this.player.crashWith(obstacle);
-      });
-  
-      if(crashed){
-        this.stop();
-      }
-    };
-    
     //for the animation
     this.updateCanvas();
   }
@@ -84,22 +69,32 @@ class Game {
       this.obstacles[i].update();
     }
   }
-
   
+  // to stop the game
+  // checkGameOver() { 
+  //   const crashed = this.obstacles.some(function (obstacle) {
+  //     console.log(this.player);
+  //     return this.player.crashWith(obstacle);
+  //   });
+
+  //   if (crashed) {
+  //     this.stop();
+  //   }
+  // }
+  // stop() {
+  //   clearInterval(this.updateCanvas); //what do I enter here
+  // }
 
   updateCanvas() {
     setInterval(() => {
       this.ctx.clearRect(0, 0, 700, 500);
-      this.ctx.drawImage(this.bg,0,0,700,500);
+      this.ctx.drawImage(this.bg, 0, 0, 700, 500);
       this.drawPlayer();
       this.drawLine();
       this.drawObstacles();
-      //this.checkGameOver();
+      //how to implement shooting bullets?
+     // this.checkGameOver();
     }, 20);
-  }
-
-  stop() {
-    clearInterval(this.interval);
   }
 }
 
@@ -111,15 +106,16 @@ class Player {
     this.posY = posY;
     this.color = color;
     this.img = this.createAvatar();
+    this.bullets = [];
+    this.frames = 0;
   }
 
-  createAvatar(){
+  createAvatar() {
     const avatar = new Image();
     avatar.src = "./images/Aang.png";
 
     return avatar;
   }
-
 
   left() {
     return this.posX;
@@ -133,7 +129,7 @@ class Player {
     return this.posY;
   }
 
-  bottowm() {
+  bottom() {
     return this.posY + this.height;
   }
 
@@ -150,7 +146,18 @@ class Player {
       case 32:
         this.jump();
         break;
+      case 13:
+        this.shootBullets();
+        break;
     }
+  }
+
+  shootBullets() {
+    this.bullets.push(new Blocks(20, 20, 80, 390, "black"));
+
+    
+    console.log(this.bullets);
+    console.log('shoot');
   }
 
   crashWith(obstacle) {
@@ -181,6 +188,13 @@ class Blocks {
     this.posX = posX;
     this.posY = posY;
     this.color = color;
+    this.image = this.createElement();
+  }
+
+  createElement() {
+    const element = new Image();
+    element.src = "./images/fire-ball.png";
+    return element;
   }
 
   left() {
@@ -199,7 +213,26 @@ class Blocks {
     return this.posY + this.height;
   }
   update() {
+    ctx.drawImage(this.image, this.posX, this.posY, this.width, this.height);
+  }
+
+  drawBullets(){
+    ctx.fillRect(this.posX,this.posY,this.width,this.height);
+  }
+
+
+}
+
+class Bullets {
+  constructor(posX, posY, speed) {
+    this.posX = posX;
+    this.posY = posY;
+    this.speed = speed;
+    this.width = 10;
+    this.height = 10;
+  }
+
+  update() {
     ctx.fillRect(this.posX, this.posY, this.width, this.height);
-    ctx.fillStyle = this.color;
   }
 }
