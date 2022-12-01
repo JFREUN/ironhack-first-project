@@ -1,0 +1,27 @@
+.game-area{
+    position: relative;
+}
+#start-screen{
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: peachpuff;
+    height: 500px;
+    width: 700px;
+}
+
+#stop-screen{
+    position: absolute;
+    display: none;
+    background-color: black;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center;
+    height: 500px;
+    width: 700px;
+}
+#stop-h1{
+    color: white;
+}

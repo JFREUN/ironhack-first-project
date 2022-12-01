@@ -1,18 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Game</title>
-    <link rel="stylesheet" href="./css/styles.css">
-</head>
-<body>
- 
-    
-<canvas id="example" width="700" height="500" style="border: 1px red solid"></canvas>
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
+    <div class="game-area">
+      <div id="start-screen">
+        <h1>The solar eclipse</h1>
+        <p>Press the space bar to jump!</p>
+        <button id="start-button"><a href="#">Start Game</a></button>
+      </div>
+      <div id="stop-screen">
+        <h1 id="stop-h1">You lose!</h1>
+        <p>Your score: <span id="score"></span></p>
+        <p>The firelord killed ya!</p>
+        <button id="restart-button"><a href="#">Try again!</a></button>
+      </div>
+      <canvas
+        id="example"
+        width="700"
+        height="500"
+        style="border: 1px red solid"
+      ></canvas>
+    </div>
 
-
-<script src="index.js"></script>
-</body>
+    <script src="index.js"></script>
+  </body>
 </html>

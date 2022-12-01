@@ -8,6 +8,10 @@ class Game {
     this.player = null;
     this.frames = 0;
     this.obstacles = [];
+    this.bulletsArray = [];
+    this.isGameOn = true;
+    this.shootPressed = false;
+    this.lives = null;
   }
 
   startGame() {
@@ -15,7 +19,7 @@ class Game {
     this.ctx = canvas.getContext("2d");
 
     //background
-    const background = new Image(); //not working
+    const background = new Image();
     background.src = "./images/mountain-background.jpg";
 
     background.onload = () => {
@@ -29,9 +33,10 @@ class Game {
     const theAvatar = new Player(60, 90, 50, 350);
     this.player = theAvatar;
 
-    //for the animation
-    this.updateCanvas();
+    //lives 
   }
+
+  
 
   drawLine() {
     ctx.beginPath();
@@ -54,47 +59,107 @@ class Game {
   drawObstacles() {
     this.frames += 1;
     let minDistance = 40;
-    let maxDistance = 100;
+    let maxDistance = 150;
 
     let unroundedDistance = Math.floor(
       Math.random() * (maxDistance - minDistance + 1) + minDistance
     );
-    let distance = Math.round(unroundedDistance / 10) * 10;
+    let distance = Math.round(unroundedDistance / 60) * 60;
 
     if (this.frames % distance === 0) {
       this.obstacles.push(new Blocks(30, 30, 640, 390, "red"));
     }
+
     for (let i = 0; i < this.obstacles.length; i++) {
       this.obstacles[i].posX += -3;
       this.obstacles[i].update();
     }
   }
-  
-  // to stop the game
-  // checkGameOver() { 
-  //   const crashed = this.obstacles.some(function (obstacle) {
-  //     console.log(this.player);
-  //     return this.player.crashWith(obstacle);
-  //   });
 
-  //   if (crashed) {
-  //     this.stop();
+  stop() {
+    this.isGameOn = false;
+    document.getElementById("stop-screen").style.display = "flex";
+    document.getElementById("restart-button").onclick = () => {
+      document.getElementById("stop-screen").style.display = "none";
+      this.frames = 0;
+      this.obstacles = [];
+      this.bulletsArray = [];
+      this.startGame();
+    };
+  }
+
+  checkGameOver() {
+    for (let i = 0; i < this.obstacles.length; i++) {
+      if (
+        !(
+          this.player.bottom() < this.obstacles[i].top() ||
+          this.player.top() > this.obstacles[i].bottom() ||
+          this.player.right() < this.obstacles[i].left() ||
+          this.player.left() > this.obstacles[i].right()
+        )
+      ) {
+        return this.stop();
+      }
+    }
+  }
+
+  score() {
+    const score = Math.floor(this.frames / 10);
+    this.ctx.font = "24px serif";
+    this.ctx.fillStyle = "black";
+    this.ctx.fillText(`Score: ${score}`, 580, 50);
+  }
+
+  shootBullets() {
+    let bullet = new Bullets(80, 400, 10, 10);
+    if (this.shootPressed === true) {
+      this.bulletsArray.push(bullet);
+    }
+
+    return (this.shootPressed = false);
+  }
+
+  shootSwitch(e) {
+    switch (e.keyCode) {
+      case 13:
+        this.shootPressed = true;
+        break;
+    }
+  }
+  // destroyObstacles() {
+  //   for (let i = 0; i < this.obstacles; i++) {  
+  //     const crashed = this.bulletsArray.some(function (bullet) {
+  //       console.log("attack!");
+  //       return this.obstacles[i].crashWith(bullet);
+  //     });
+
+  //     if (crashed) {
+  //       this.obstacles.splice(0, 1);
+  //     }
   //   }
-  // }
-  // stop() {
-  //   clearInterval(this.updateCanvas); //what do I enter here
-  // }
+  // } //doesn't work
 
   updateCanvas() {
-    setInterval(() => {
-      this.ctx.clearRect(0, 0, 700, 500);
-      this.ctx.drawImage(this.bg, 0, 0, 700, 500);
-      this.drawPlayer();
-      this.drawLine();
-      this.drawObstacles();
-      //how to implement shooting bullets?
-     // this.checkGameOver();
-    }, 20);
+    let gameSwitch = this.isGameOn;
+    if (gameSwitch === true) {
+      setInterval(() => {
+        this.ctx.clearRect(0, 0, 700, 500);
+        this.ctx.drawImage(this.bg, 0, 0, 700, 500);
+        this.drawPlayer();
+        this.drawLine();
+        this.drawObstacles();
+        this.checkGameOver();
+        this.score();
+        this.shootBullets();
+
+        for (let i = 0; i < this.bulletsArray.length; i++) {
+          this.bulletsArray[i].move();
+          this.bulletsArray[i].update();
+        }
+        // this.destroyObstacles(); // doesn't work
+      }, 20);
+    }
+    requestAnimationFrame(this.updateCanvas);
   }
 }
 
@@ -106,7 +171,6 @@ class Player {
     this.posY = posY;
     this.color = color;
     this.img = this.createAvatar();
-    this.bullets = [];
     this.frames = 0;
   }
 
@@ -146,40 +210,9 @@ class Player {
       case 32:
         this.jump();
         break;
-      case 13:
-        this.shootBullets();
-        break;
     }
   }
-
-  shootBullets() {
-    this.bullets.push(new Blocks(20, 20, 80, 390, "black"));
-
-    
-    console.log(this.bullets);
-    console.log('shoot');
-  }
-
-  crashWith(obstacle) {
-    return !(
-      this.bottom() < obstacle.top() ||
-      this.top() > obstacle.bottom() ||
-      this.right() < obstacle.left() ||
-      this.left() > obstacle.right()
-    );
-  }
 }
-
-window.onload = () => {
-  const game = new Game();
-  game.startGame();
-  document.addEventListener("keydown", (e) => {
-    game.player.move(e);
-  });
-  document.addEventListener("keyup", (e) => {
-    game.player.land();
-  });
-};
 
 class Blocks {
   constructor(width, height, posX, posY, color) {
@@ -212,27 +245,68 @@ class Blocks {
   bottom() {
     return this.posY + this.height;
   }
+  drawLife(){
+    ctx.fillRect(this.posX,this.posY,this.width,this.height);
+  }
   update() {
     ctx.drawImage(this.image, this.posX, this.posY, this.width, this.height);
   }
-
-  drawBullets(){
-    ctx.fillRect(this.posX,this.posY,this.width,this.height);
-  }
-
-
 }
 
 class Bullets {
-  constructor(posX, posY, speed) {
+  constructor(posX, posY, width, height) {
     this.posX = posX;
     this.posY = posY;
-    this.speed = speed;
-    this.width = 10;
-    this.height = 10;
+    this.width = width;
+    this.height = height;
+    this.delay = 0;
+  }
+
+  left() {
+    return this.posX;
+  }
+
+  right() {
+    return this.posX + this.width;
+  }
+
+  top() {
+    return this.posY;
+  }
+
+  bottom() {
+    return this.posY + this.height;
   }
 
   update() {
     ctx.fillRect(this.posX, this.posY, this.width, this.height);
   }
+
+  move() {
+    this.posX += 1;
+  }
+
+  crashWith(obstacle) {
+    return !(
+      this.bottom() < obstacle.top() ||
+      this.top() > obstacle.bottom() ||
+      this.right() < obstacle.left() ||
+      this.left() > obstacle.right()
+    );
+  }
 }
+
+window.onload = () => {
+  document.getElementById("start-button").onclick = () => {
+    document.getElementById("start-screen").style.display = "none";
+    const game = new Game();
+    game.startGame();
+    document.addEventListener("keydown", (e) => {
+      game.player.move(e);
+      game.shootSwitch(e);
+    });
+    document.addEventListener("keyup", (e) => {
+      game.player.land();
+    });
+  };
+};
