@@ -11,7 +11,6 @@ class Game {
     this.bulletsArray = [];
     this.isGameOn = true;
     this.shootPressed = false;
-    this.lives = null;
   }
 
   startGame() {
@@ -32,11 +31,7 @@ class Game {
 
     const theAvatar = new Player(60, 90, 50, 350);
     this.player = theAvatar;
-
-    //lives 
   }
-
-  
 
   drawLine() {
     ctx.beginPath();
@@ -57,34 +52,37 @@ class Game {
   }
 
   drawObstacles() {
-    this.frames += 1;
-    let minDistance = 40;
-    let maxDistance = 150;
+    if (this.isGameOn === true) {
+      this.frames += 1;
+      let minDistance = 40;
+      let maxDistance = 150;
 
-    let unroundedDistance = Math.floor(
-      Math.random() * (maxDistance - minDistance + 1) + minDistance
-    );
-    let distance = Math.round(unroundedDistance / 60) * 60;
+      let unroundedDistance = Math.floor(
+        Math.random() * (maxDistance - minDistance + 1) + minDistance
+      );
+      let distance = Math.round(unroundedDistance / 60) * 60;
 
-    if (this.frames % distance === 0) {
-      this.obstacles.push(new Blocks(30, 30, 640, 390, "red"));
-    }
+      if (this.frames % distance === 0) {
+        this.obstacles.push(new Blocks(30, 30, 640, 390, "red"));
+      }
 
-    for (let i = 0; i < this.obstacles.length; i++) {
-      this.obstacles[i].posX += -3;
-      this.obstacles[i].update();
+      for (let i = 0; i < this.obstacles.length; i++) {
+        this.obstacles[i].posX += -5;
+        this.obstacles[i].update();
+      }
     }
   }
 
   stop() {
     this.isGameOn = false;
     document.getElementById("stop-screen").style.display = "flex";
+    let scoreDisplay = document.getElementById("score");
+    scoreDisplay.innerHTML = Math.floor(this.frames / 10).toString();
+
     document.getElementById("restart-button").onclick = () => {
       document.getElementById("stop-screen").style.display = "none";
-      this.frames = 0;
-      this.obstacles = [];
-      this.bulletsArray = [];
-      this.startGame();
+      location.reload();
+      return (this.isGameOn = true);
     };
   }
 
@@ -105,13 +103,14 @@ class Game {
 
   score() {
     const score = Math.floor(this.frames / 10);
-    this.ctx.font = "24px serif";
+    this.ctx.font = "10px 'Press Start 2P'";
     this.ctx.fillStyle = "black";
     this.ctx.fillText(`Score: ${score}`, 580, 50);
+    return score;
   }
 
   shootBullets() {
-    let bullet = new Bullets(80, 400, 10, 10);
+    let bullet = new Bullets(80, 400, 20, 20);
     if (this.shootPressed === true) {
       this.bulletsArray.push(bullet);
     }
@@ -126,22 +125,21 @@ class Game {
         break;
     }
   }
-  // destroyObstacles() {
-  //   for (let i = 0; i < this.obstacles; i++) {  
-  //     const crashed = this.bulletsArray.some(function (bullet) {
-  //       console.log("attack!");
-  //       return this.obstacles[i].crashWith(bullet);
-  //     });
+  destroyObstacles() {
+    for (let i = 0; i < this.obstacles; i++) {
+      const crashed = this.bulletsArray.some(function (bullet) {
+        console.log("attack!");
+        return this.obstacles[i].crashWith(bullet);
+      });
 
-  //     if (crashed) {
-  //       this.obstacles.splice(0, 1);
-  //     }
-  //   }
-  // } //doesn't work
+      if (crashed) {
+        this.obstacles.splice(0, 1);
+      }
+    }
+  } //doesn't work
 
   updateCanvas() {
-    let gameSwitch = this.isGameOn;
-    if (gameSwitch === true) {
+    if (this.isGameOn === true) {
       setInterval(() => {
         this.ctx.clearRect(0, 0, 700, 500);
         this.ctx.drawImage(this.bg, 0, 0, 700, 500);
@@ -151,12 +149,11 @@ class Game {
         this.checkGameOver();
         this.score();
         this.shootBullets();
-
         for (let i = 0; i < this.bulletsArray.length; i++) {
           this.bulletsArray[i].move();
           this.bulletsArray[i].update();
         }
-        // this.destroyObstacles(); // doesn't work
+        this.destroyObstacles(); // doesn't work
       }, 20);
     }
     requestAnimationFrame(this.updateCanvas);
@@ -171,7 +168,6 @@ class Player {
     this.posY = posY;
     this.color = color;
     this.img = this.createAvatar();
-    this.frames = 0;
   }
 
   createAvatar() {
@@ -245,11 +241,18 @@ class Blocks {
   bottom() {
     return this.posY + this.height;
   }
-  drawLife(){
-    ctx.fillRect(this.posX,this.posY,this.width,this.height);
-  }
+
   update() {
     ctx.drawImage(this.image, this.posX, this.posY, this.width, this.height);
+  }
+
+  crashWith(bullet) {
+    return !(
+      this.bottom() < bullet.top() ||
+      this.top() > bullet.bottom() ||
+      this.right() < bullet.left() ||
+      this.left() > bullet.right()
+    );
   }
 }
 
@@ -260,6 +263,13 @@ class Bullets {
     this.width = width;
     this.height = height;
     this.delay = 0;
+    this.image = this.createElement();
+  }
+
+  createElement() {
+    const element = new Image();
+    element.src = "./images/water-ball.png";
+    return element;
   }
 
   left() {
@@ -279,20 +289,11 @@ class Bullets {
   }
 
   update() {
-    ctx.fillRect(this.posX, this.posY, this.width, this.height);
+    ctx.drawImage(this.image, this.posX, this.posY, this.width, this.height);
   }
 
   move() {
-    this.posX += 1;
-  }
-
-  crashWith(obstacle) {
-    return !(
-      this.bottom() < obstacle.top() ||
-      this.top() > obstacle.bottom() ||
-      this.right() < obstacle.left() ||
-      this.left() > obstacle.right()
-    );
+    this.posX += 2;
   }
 }
 

@@ -1,3 +1,12 @@
+h1{
+    margin: 0 0 20px 0;
+    font-size: 24px;
+}
+p{
+    font-size: 10px;
+    margin-bottom: 30px;
+}
+
 .game-area{
     position: relative;
 }
@@ -10,18 +19,95 @@
     background-color: peachpuff;
     height: 500px;
     width: 700px;
+    background-image: url("../images/start-bg.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    font-family: 'Press Start 2P', cursive;
+}
+
+#start-container{
+    background-color: rgba(255, 240, 220, 0.5);
+    display: flex; 
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 50px;
+    text-align: center;
+    border-radius: 10px;
 }
 
 #stop-screen{
     position: absolute;
     display: none;
-    background-color: black;
+    background-image: url("/images/stop-bg.jpeg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center 45%;
     flex-direction: column;
     align-items: center; 
     justify-content: center;
     height: 500px;
     width: 700px;
+    color: white;
+    font-family: 'Press Start 2P', cursive;
 }
-#stop-h1{
+
+#score-text{
     color: white;
 }
+#stop-button{
+    width: 100%;
+}
+
+.button{
+    text-transform: uppercase;
+text-align: center;
+    text-decoration: none;
+    width: 40%;
+    background: rgba(255, 240, 220, 0.7);
+    padding: 15px 20px;
+    border-radius: 10px;
+    border-color: darkslategrey;
+    color: black;
+    font-weight: bold;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 10px;
+}
+.button:hover{
+    background-color: white;
+    position: relative;
+    bottom: 5px;
+}
+
+a{
+    text-decoration: none;
+    color: darkslategrey;
+}
+
+.key{
+    background-color: white;
+    padding: 10px;
+    border: black solid 1px;
+
+}
+
+.fire-sign{
+    height: 70px;
+    width: 70px;
+    margin-bottom: 20px;
+}
+
+#stop-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background-color: rgba(255, 240, 220, 0.4);
+    border-radius: 50%;
+    border: solid 3px black;
+    padding: 70px;
+    margin-bottom: 10px;
+
+}
+
