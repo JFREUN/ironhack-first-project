@@ -26,26 +26,6 @@ class Game {
       this.updateCanvas();
       this.drawPlayer();
     };
-
-    const backgroundImage = {
-      img: background,
-      x: 0,
-      speed: -1,
-    
-      move: function() {
-        this.x += this.speed;
-        this.x %= canvas.width;
-      },
-    
-      draw: function() {
-        ctx.drawImage(this.img, this.x, 0);
-        if (this.speed < 0) {
-          ctx.drawImage(this.img, this.x + canvas.width, 0);
-        } else {
-          ctx.drawImage(this.img, this.x - this.img.width, 0);
-        }
-      },
-    };
     //player
 
     const theAvatar = new Player(60, 90, 50, 350);
@@ -66,20 +46,20 @@ class Game {
   drawObstacles() {
     if (this.isGameOn === true) {
       this.frames += 1;
-      let minDistance = 40;
-      let maxDistance = 150;
+      let minDistance = 20;
+      let maxDistance = 80;
 
       let unroundedDistance = Math.floor(
         Math.random() * (maxDistance - minDistance + 1) + minDistance
       );
-      let distance = Math.round(unroundedDistance / 60) * 60;
+      let distance = Math.round(unroundedDistance / 30) * 30;
 
       if (this.frames % distance === 0) {
         this.obstacles.push(new Blocks(30, 30, 640, 390, "red"));
       }
 
       for (let i = 0; i < this.obstacles.length; i++) {
-        this.obstacles[i].posX += -5;
+        this.obstacles[i].posX += -8;
         this.obstacles[i].update();
       }
     }
@@ -138,16 +118,19 @@ class Game {
     }
   }
   destroyObstacles() {
-    for (let i = 0; i < this.obstacles; i++) {
+    this.obstacles.forEach(obstacle => {
       const crashed = this.bulletsArray.some(function (bullet) {
-        return this.obstacles[i].crashWith(bullet);
+        return bullet.crashWith(obstacle);
       });
+      let index = this.obstacles.indexOf(obstacle);
       if (crashed) {
-        this.obstacles.splice(0, 1);
+        this.obstacles.splice(index, 1);
+        this.bulletsArray = [];
         console.log("attack!");
       }
-    }
-  } //doesn't work
+    });
+  } 
+  
 
   updateCanvas() {
     if (this.isGameOn === true) {
@@ -165,7 +148,7 @@ class Game {
           this.bulletsArray[i].move();
           this.bulletsArray[i].update();
         }
-        this.destroyObstacles(); // doesn't work
+        this.destroyObstacles(); 
       }, 20);
     }
     requestAnimationFrame(this.updateCanvas);
@@ -266,6 +249,7 @@ class Blocks {
       this.left() > bullet.right()
     );
   }
+
 }
 
 class Bullets {
@@ -305,7 +289,16 @@ class Bullets {
   }
 
   move() {
-    this.posX += 2;
+    this.posX += 3;
+  }
+
+  crashWith(obstacle) {
+    return !(
+      this.bottom() < obstacle.top() ||
+      this.top() > obstacle.bottom() ||
+      this.right() < obstacle.left() ||
+      this.left() > obstacle.right()
+    );
   }
 }
 
