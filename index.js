@@ -19,7 +19,7 @@ class Game {
 
     //background
     const background = new Image();
-    background.src = "./images/mountain-background.jpg";
+    background.src = "./images/lava-background.jpg";
 
     background.onload = () => {
       this.bg = background;
@@ -27,19 +27,31 @@ class Game {
       this.drawPlayer();
     };
 
+    const backgroundImage = {
+      img: background,
+      x: 0,
+      speed: -1,
+    
+      move: function() {
+        this.x += this.speed;
+        this.x %= canvas.width;
+      },
+    
+      draw: function() {
+        ctx.drawImage(this.img, this.x, 0);
+        if (this.speed < 0) {
+          ctx.drawImage(this.img, this.x + canvas.width, 0);
+        } else {
+          ctx.drawImage(this.img, this.x - this.img.width, 0);
+        }
+      },
+    };
     //player
 
     const theAvatar = new Player(60, 90, 50, 350);
     this.player = theAvatar;
   }
 
-  drawLine() {
-    ctx.beginPath();
-    ctx.moveTo(0, 440);
-    ctx.lineTo(700, 440);
-    ctx.stroke();
-    ctx.closePath();
-  }
 
   drawPlayer() {
     this.ctx.drawImage(
@@ -104,7 +116,7 @@ class Game {
   score() {
     const score = Math.floor(this.frames / 10);
     this.ctx.font = "10px 'Press Start 2P'";
-    this.ctx.fillStyle = "black";
+    this.ctx.fillStyle = "white";
     this.ctx.fillText(`Score: ${score}`, 580, 50);
     return score;
   }
@@ -128,12 +140,11 @@ class Game {
   destroyObstacles() {
     for (let i = 0; i < this.obstacles; i++) {
       const crashed = this.bulletsArray.some(function (bullet) {
-        console.log("attack!");
         return this.obstacles[i].crashWith(bullet);
       });
-
       if (crashed) {
         this.obstacles.splice(0, 1);
+        console.log("attack!");
       }
     }
   } //doesn't work
@@ -144,11 +155,12 @@ class Game {
         this.ctx.clearRect(0, 0, 700, 500);
         this.ctx.drawImage(this.bg, 0, 0, 700, 500);
         this.drawPlayer();
-        this.drawLine();
         this.drawObstacles();
         this.checkGameOver();
         this.score();
         this.shootBullets();
+        
+
         for (let i = 0; i < this.bulletsArray.length; i++) {
           this.bulletsArray[i].move();
           this.bulletsArray[i].update();
